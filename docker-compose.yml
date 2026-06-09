@@ -1,0 +1,24 @@
+services:
+  # Your Request Service Application
+  request-service:
+    build: ./request-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    environment:
+      # This tells your Node.js code where to find the database
+      - MONGO_URI=mongodb://mongo:27017/campusdb
+
+  # The MongoDB Database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      # This keeps your database data safe even if you restart your computer
+      - mongo-data:/data/db
+
+# This defines a persistent volume for MongoDB
+volumes:
+  mongo-data:
