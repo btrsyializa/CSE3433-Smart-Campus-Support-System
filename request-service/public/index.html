@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Campus Portal</title>
+    <title>Smart Campus - Request Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
     <style>
@@ -20,7 +18,6 @@
             --shadow-sm: 0 4px 12px rgba(255, 175, 189, 0.15);
             --shadow-md: 0 10px 30px rgba(255, 175, 189, 0.25);
         }
-
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(135deg, var(--cream-bg) 0%, #fff0f2 100%);
@@ -28,14 +25,11 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-
         .serif-title {
             font-family: 'Playfair Display', serif;
             font-weight: 600;
             color: var(--accent-berry);
         }
-
-        /* Glassmorphism Card Panels */
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
@@ -45,13 +39,6 @@
             box-shadow: var(--shadow-sm);
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
-
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Input Component Modifiers */
         .custom-input {
             border: 2px solid var(--pastel-pink);
             border-radius: 14px;
@@ -59,15 +46,12 @@
             background-color: rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
         }
-
         .custom-input:focus {
             border-color: var(--deep-rose);
             box-shadow: 0 0 0 4px rgba(255, 117, 140, 0.15);
             background-color: #fff;
             outline: none;
         }
-
-        /* Cohesive Pastel Accent Buttons */
         .btn-pink {
             background: linear-gradient(135deg, var(--deep-rose) 0%, #ff5e7e 100%);
             color: white;
@@ -78,29 +62,12 @@
             box-shadow: 0 4px 15px rgba(255, 117, 140, 0.3);
             transition: all 0.3s ease;
         }
-
         .btn-pink:hover {
             background: linear-gradient(135deg, #ff5e7e 0%, var(--deep-rose) 100%);
             color: white;
             transform: scale(1.02);
             box-shadow: 0 6px 20px rgba(255, 117, 140, 0.45);
         }
-
-        /* Login Screen Container Element */
-        #loginGate {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .login-box {
-            width: 100%;
-            max-width: 450px;
-            padding: 40px;
-        }
-
-        /* Status Badge Component Styles */
         .badge-pending {
             background-color: #ffe5eb;
             color: #d03a52;
@@ -109,32 +76,19 @@
             border-radius: 10px;
             font-weight: 600;
         }
-
-        /* System Navigation Bar */
         .navbar-brand-aesthetic {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
             color: var(--accent-berry) !important;
             font-size: 1.4rem;
         }
-
-        /* Data Item Container Design */
         .request-item {
             border-left: 5px solid var(--deep-rose) !important;
             background-color: rgba(255, 255, 255, 0.7);
             border-radius: 14px;
             margin-bottom: 12px;
-            border-top: 1px solid rgba(0,0,0,0.03);
-            border-right: 1px solid rgba(0,0,0,0.03);
-            border-bottom: 1px solid rgba(0,0,0,0.03);
-            transition: transform 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.03);
         }
-
-        .request-item:hover {
-            transform: translateX(4px);
-        }
-
-        /* Operational Real-time Metrics Panels */
         .stat-banner {
             background: linear-gradient(135deg, #fff0f2 0%, var(--cream-bg) 100%);
             border: 2px dashed var(--pastel-pink);
@@ -142,7 +96,6 @@
             padding: 20px;
             text-align: center;
         }
-
         .stat-number {
             font-size: 2.2rem;
             font-weight: 700;
@@ -152,34 +105,15 @@
 </head>
 <body>
 
-    <div id="loginGate">
-        <div class="glass-card login-box text-center">
-            <h2 class="serif-title mb-2">Welcome Back</h2>
-            <p class="text-muted mb-4">Smart Campus Support System</p>
-            
-            <div class="mb-3 text-start">
-                <label class="form-label font-weight-bold" style="color: var(--accent-berry)">Username</label>
-                <input type="text" id="usernameField" class="form-control custom-input" placeholder="Enter admin username">
-            </div>
-            <div class="mb-4 text-start">
-                <label class="form-label font-weight-bold" style="color: var(--accent-berry)">Password</label>
-                <input type="password" id="passwordField" class="form-control custom-input" placeholder="Enter security password">
-            </div>
-            
-            <button onclick="authenticateSession()" class="btn btn-pink w-100 py-3">Authenticate Session</button>
-            <div id="loginAlert" class="mt-3 text-danger small font-weight-bold"></div>
-        </div>
-    </div>
-
-    <div id="appContainer" style="display: none;">
+    <div id="appContainer">
         <nav class="navbar navbar-expand-lg glass-card m-3 px-4 py-3">
             <div class="container-fluid">
                 <span class="navbar-brand navbar-brand-aesthetic"> Smart Campus Support System </span>
                 <div class="d-flex align-items-center">
                     <span class="badge bg-white text-dark border p-2 me-3" style="border-radius: 10px;">
-                        Active node: <strong>Request_Service</strong>
+                        User: <strong id="navUserName">Loading...</strong>
                     </span>
-                    <button onclick="invalidateSession()" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;">Disconnect</button>
+                    <button onclick="returnToHub()" class="btn btn-sm btn-outline-secondary" style="border-radius: 10px;">Return to Hub</button>
                 </div>
             </div>
         </nav>
@@ -201,7 +135,7 @@
                             <input type="text" id="locationInput" class="form-control custom-input" placeholder="e.g., MP1 / BS7">
                         </div>
                         
-                        <button onclick="dispatchRequestPost()" class="btn btn-pink w-100 py-3">
+                        <button onclick="dispatchRequestPost()" class="btn-pink w-100 py-3">
                             Commit Entry Document
                         </button>
                     </div>
@@ -222,13 +156,13 @@
                         <div class="row mb-4">
                             <div class="col-md-6 mb-2">
                                 <div class="stat-banner">
-                                    <div class="small text-muted fw-bold uppercase">Total Stream Requests</div>
+                                    <div class="small text-muted fw-bold text-uppercase">Total Stream Requests</div>
                                     <div id="metricTotal" class="stat-number">0</div>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-2">
                                 <div class="stat-banner">
-                                    <div class="small text-muted fw-bold uppercase">Pending Evaluation</div>
+                                    <div class="small text-muted fw-bold text-uppercase">Pending Evaluation</div>
                                     <div id="metricPending" class="stat-number">0</div>
                                 </div>
                             </div>
@@ -238,7 +172,6 @@
                             <ul id="streamRenderingTarget" class="list-group list-group-flush">
                                 </ul>
                         </div>
-
                     </div>
                 </div>
 
@@ -247,34 +180,44 @@
     </div>
 
     <script>
-        // Client-side authentication credentials state configuration definitions
-        const SECURE_USER = "admin";
-        const SECURE_PASS = "admin123";
+        // --- SOA Authentication Guard ---
+        window.onload = () => {
+            // 1. Check if the Auth Gateway sent us a session ticket in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionToken = urlParams.get('session');
 
-        // Session Lifecycle Handler Methods
-        function authenticateSession() {
-            const user = document.getElementById('usernameField').value.trim();
-            const pass = document.getElementById('passwordField').value;
-            const alertBox = document.getElementById('loginAlert');
-
-            if (user === SECURE_USER && pass === SECURE_PASS) {
-                document.getElementById('loginGate').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                fetchRemoteStreamArray(); // Sync database layer array metrics
-            } else {
-                alertBox.textContent = "Invalid administrator credentials matching node configuration.";
+            if (sessionToken) {
+                // Decode the ticket and save it to Port 3001's local vault!
+                const decodedUser = atob(sessionToken);
+                localStorage.setItem('campusUser', decodedUser);
+                
+                // Clean up the URL so it looks nice and clean in the browser
+                window.history.replaceState({}, document.title, "/");
             }
+
+            // 2. Read the secure token from local storage
+            const userData = localStorage.getItem('campusUser');
+            
+            if (!userData) {
+                // If no token is found, kick them back to Port 3000 immediately
+                alert("Unauthorized Access. Redirecting to Gateway...");
+                window.location.href = 'http://localhost:3000';
+            } else {
+                // Parse identity and personalize the dashboard
+                const user = JSON.parse(userData);
+                document.getElementById('navUserName').innerText = user.name;
+                
+                // Load data only after confirming identity
+                fetchRemoteStreamArray(); 
+            }
+        };
+
+        function returnToHub() {
+            // Sends the user back to the central port 3000 dashboard
+            window.location.href = 'http://localhost:3000/dashboard.html';
         }
 
-        function invalidateSession() {
-            document.getElementById('usernameField').value = '';
-            document.getElementById('passwordField').value = '';
-            document.getElementById('loginAlert').textContent = '';
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('loginGate').style.display = 'flex';
-        }
-
-        // Network Layer: Query Array Fetch Operations
+        // --- Network Layer: Query Array Fetch Operations ---
         async function fetchRemoteStreamArray() {
             const targetUl = document.getElementById('streamRenderingTarget');
             try {
@@ -283,7 +226,6 @@
                 
                 const dataArray = await response.json();
                 
-                // Update Analytics Layer Dashboard Metrics
                 document.getElementById('metricTotal').textContent = dataArray.length;
                 const pendingCount = dataArray.filter(item => item.status === 'Pending').length;
                 document.getElementById('metricPending').textContent = pendingCount;
@@ -296,14 +238,13 @@
                     return;
                 }
 
-                // Render document objects mapped cleanly into system specific layout items
                 targetUl.innerHTML = dataArray.map(doc => `
                     <li class="list-group-item request-item d-flex justify-content-between align-items-center p-3 shadow-sm border-0">
                         <div>
                             <h6 class="mb-1 fw-bold text-dark">${escapeOutput(doc.title)}</h6>
                             <p class="mb-0 text-muted small">
                                 <span class="me-2"> Location: <strong>${escapeOutput(doc.location)}</strong></span>
-                                <span class="text-xs">ID: ${doc._id || 'local-sqlite'}</span>
+                                <span class="text-xs">ID: ${doc._id}</span>
                             </p>
                         </div>
                         <div>
@@ -318,7 +259,7 @@
             }
         }
 
-        // Network Layer: Mutation Object Post Dispatch Operations
+        // --- Network Layer: Mutation Object Post Dispatch Operations ---
         async function dispatchRequestPost() {
             const titleElement = document.getElementById('titleInput');
             const locationElement = document.getElementById('locationInput');
@@ -340,15 +281,12 @@
 
                 if (!response.ok) {
                     const rawErrorResponse = await response.json().catch(() => ({}));
-                    const specificDetail = rawErrorResponse.error || `HTTP Code ${response.status}`;
-                    throw new Error(`Server tracking update dropped: ${specificDetail}`);
+                    throw new Error(`Server tracking update dropped: ${rawErrorResponse.error || response.status}`);
                 }
 
-                // Flash entry input values to prepare layout space
                 titleElement.value = '';
                 locationElement.value = '';
                 
-                // Re-poll cluster data loop to populate updated stream
                 await fetchRemoteStreamArray();
 
             } catch (error) {
@@ -357,7 +295,6 @@
             }
         }
 
-        // Helper string encoder to avoid cross-site document structure injections
         function escapeOutput(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;")
