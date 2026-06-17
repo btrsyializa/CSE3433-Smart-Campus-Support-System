@@ -1,42 +1,51 @@
-// 1. Load environment variables (Must be at the top)
+// Load environment variables (Must be at the top)
 require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const connectDB = require('./config/db'); // Your database connection function
-const requestRoutes = require('./routes/requestRoutes'); // Your route handlers
+const connectDB = require('./config/db');
 
 const app = express();
 
-// 2. Middleware Layer
-// CORS: Allows frontend/other services to talk to this API
+// Middleware Layer
 app.use(cors()); 
-// JSON Parser: Allows the server to understand JSON sent in requests
 app.use(express.json());
-// Static Files: Serves your index.html automatically from the 'public' folder
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Connect to Database
+// Connect to Database
 connectDB();
 
-// 4. Routes Layer
-// This maps all requests starting with /requests to your requestRoutes file
-app.use('/requests', requestRoutes);
+// ========================================================
+// THIS IS THE MISSING LINK! 
+// It tells the server to route traffic to your layered files
+// ========================================================
+app.use('/api/requests', require('./routes/requestRoutes'));
 
-// Simple Health Check (Good for architectural documentation)
+const FACILITY_SERVICE_URL = process.env.FACILITY_SERVICE_URL || 'http://localhost:3002';
+
+// Health check endpoint
 app.get('/', (req, res) => {
     res.send("Request Service is online and connected to Database.");
 });
 
-// 5. Global Error Handler (Good for architectural robustness)
+// Global Error Handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error('[ERROR]', err.stack);
+    res.status(err.status || 500).json({ 
+        message: "Internal Server Error",
+        error: process.env.NODE_ENV === 'development' ? err.message : 'An error occurred'
+    });
 });
 
-// 6. Start the Server
+// 404 Handler (If frontend asks for a URL that doesn't exist)
+app.use((req, res) => {
+    res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Start the Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`[Architecture] Request Service running on port ${PORT}`);
+    console.log(`[Configuration] Facility Service URL: ${FACILITY_SERVICE_URL}`);
 });
