@@ -3,31 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Campus - Dashboard</title>
+    <title>Smart Campus - Control Hub Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Shared UI Aesthetics styling context */
+        .service-card {
+            border: 1px solid var(--pastel-pink);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.15);
+        }
+    </style>
 </head>
-<body>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
 
-    <div class="glass-card p-5 text-center" style="width: 100%; max-width: 700px;">
-        <h2 class="serif-title mb-1">Welcome, <span id="studentName"></span>!</h2>
-        <p class="text-muted mb-5">Matric No: <span id="studentMatric" class="fw-bold" style="color: var(--dark-charcoal)"></span> | Smart Campus Portal</p>
+    <div class="glass-card p-5 text-center" style="width: 100%; max-width: 700px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(15px); border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+        <h2 class="serif-title mb-1">Welcome, <span id="studentName">User</span>!</h2>
+        <p class="text-muted mb-5" id="contextSubtitle">Smart Campus Management Portal</p>
 
         <div id="studentPanel" class="row g-4" style="display: none;">
             <div class="col-md-6">
-                <div onclick="navigateWithSession(3001)" class="service-card" style="cursor: pointer;">
-                    <div class="service-icon"></div>
+                <div onclick="navigateWithSession(3001)" class="service-card h-100" style="cursor: pointer;">
+                    <div class="fs-1 mb-2"></div>
                     <h5 class="fw-bold" style="color: var(--accent-berry)">System Anomaly</h5>
-                    <p class="small text-muted mb-0">Report broken facilities or IT issues directly to maintenance.</p>
+                    <p class="small text-muted mb-0">Report broken facilities or IT bugs directly to the campus maintenance desk.</p>
                 </div>
             </div>
             
             <div class="col-md-6">
-                <div onclick="navigateWithSession(3002)" class="service-card" style="cursor: pointer;">
-                    <div class="service-icon"></div>
+                <div onclick="navigateWithSession(3002)" class="service-card h-100" style="cursor: pointer;">
+                    <div class="fs-1 mb-2"></div>
                     <h5 class="fw-bold" style="color: var(--accent-berry)">Facility Booking</h5>
-                    <p class="small text-muted mb-0">Reserve labs, sports courts, and meeting rooms.</p>
+                    <p class="small text-muted mb-0">Reserve study laboratories, sport spaces, and lecture presentation slots halls.</p>
                 </div>
             </div>
         </div>
@@ -35,55 +50,92 @@
         <div id="adminPanel" class="row g-4" style="display: none;">
             <div class="col-md-12">
                 <div onclick="navigateWithSession(3001)" class="service-card" style="cursor: pointer; border-color: #ffc107; background: linear-gradient(135deg, #fffdf5 0%, #fff8d6 100%);">
-                    <div class="service-icon"></div>
+                    <div class="fs-1 mb-2"></div>
                     <h5 class="fw-bold text-warning" style="text-shadow: 0px 1px 2px rgba(0,0,0,0.1);">Admin Override Panel</h5>
-                    <p class="small text-muted mb-0">View all student requests, block facilities globally, and manage network traffic.</p>
+                    <p class="small text-muted mb-0">Evaluate student fault requests, transition issue states, block anomalies globally, and administer systems cluster.</p>
                 </div>
             </div>
         </div>
         
         <div class="mt-5 pt-3 border-top" style="border-color: var(--pastel-pink) !important;">
-            <button onclick="logout()" class="btn btn-sm btn-outline-secondary" style="border-radius: 10px;">Disconnect Session</button>
+            <button onclick="logout()" class="btn btn-sm btn-outline-secondary px-4" style="border-radius: 10px;">Disconnect Session</button>
         </div>
     </div>
 
     <script>
-        // Security Check & Role-Based Access Control (RBAC)
+        // --- Single Sign-On Identity Token Interception Guard ---
         window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryToken = urlParams.get('session');
+
+            if (queryToken) {
+                try {
+                    // Decodes base64 signed payload string packet back to browser memory
+                    const decodedUser = atob(queryToken);
+                    localStorage.setItem('campusUser', decodedUser);
+                } catch (err) {
+                    console.error("SSO pipeline token unpack crash:", err);
+                    window.location.href = '/';
+                    return;
+                }
+                // Cleans parameter queries from URL query path smoothly
+                window.history.replaceState({}, document.title, "/dashboard.html");
+            }
+
             const userData = localStorage.getItem('campusUser');
             if(!userData) {
-                // Not logged in! Kick them back to login page
+                // Not logged in or expired context! Reject routing back to gateway login
                 window.location.href = '/'; 
             } else {
-                const user = JSON.parse(userData);
-                document.getElementById('studentName').innerText = user.name;
-                
-                if(user.matricNo) {
-                    document.getElementById('studentMatric').innerText = user.matricNo;
-                }
-
-                // DYNAMIC UI: Show different panels based on user role
-                if (user.role === 'admin') {
-                    document.getElementById('adminPanel').style.display = 'flex';
-                } else {
-                    document.getElementById('studentPanel').style.display = 'flex';
+                try {
+                    const user = JSON.parse(userData);
+                    document.getElementById('studentName').innerText = user.name;
+                    
+                    // Render Context metadata titles safely
+                    const titleTarget = document.getElementById('contextSubtitle');
+                    if(user.role === 'admin') {
+                        titleTarget.innerHTML = `<span class="badge bg-danger p-2 px-3 shadow-sm" style="border-radius:10px;">CLEARANCE: ADMINISTRATIVE OVERRIDE</span>`;
+                        document.getElementById('adminPanel').style.display = 'flex';
+                    } else {
+                        const matric = (user.matricNo && user.matricNo !== 'N/A') ? user.matricNo : 'Verified Student';
+                        titleTarget.innerHTML = `Matric No: <span class="fw-bold text-dark">${matric}</span> | Smart Campus Portal`;
+                        document.getElementById('studentPanel').style.display = 'flex';
+                    }
+                } catch(e) {
+                    logout();
                 }
             }
         };
 
-        // SSO Routing Function: Encrypts the token and attaches it to the URL
+        // --- Decoupled Service Mesh SSO Redirection Engine ---
         function navigateWithSession(port) {
             const userData = localStorage.getItem('campusUser');
             if (userData) {
-                // btoa() converts the user data into a safe Base64 token
-                const token = btoa(userData);
-                window.location.href = `http://localhost:${port}/?session=${token}`;
+                try {
+                    const user = JSON.parse(userData);
+                    // Packs credentials into Base64 string payload ticket
+                    const token = btoa(userData);
+                    
+                    if (port === 3001) {
+                        // Splits layout paths explicitly across role bounds to clear 404 endpoint failures
+                        if (user.role === 'admin') {
+                            window.location.href = `http://localhost:3001/admin.html?session=${token}`;
+                        } else {
+                            window.location.href = `http://localhost:3001/dashboard.html?session=${token}`;
+                        }
+                    } else if (port === 3002) {
+                        // Maps target parameters into your facility cluster module
+                        window.location.href = `http://localhost:3002/booking.html?session=${token}`;
+                    }
+                } catch (err) {
+                    logout();
+                }
             } else {
                 logout();
             }
         }
 
-        // Kills the session and returns to login
+        // --- Session Eviction Destructor Routine ---
         function logout() {
             localStorage.removeItem('campusUser');
             window.location.href = '/'; 

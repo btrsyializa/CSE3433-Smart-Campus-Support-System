@@ -8,7 +8,6 @@ window.onload = () => {
     const sessionToken = urlParams.get('session');
 
     if (sessionToken) {
-        // Decode the ticket and save it to local storage
         try {
             const decodedUser = atob(sessionToken);
             localStorage.setItem('campusUser', decodedUser);
@@ -19,28 +18,29 @@ window.onload = () => {
             return;
         }
         
-        // Clean up the URL so it looks nice and clean in the browser
+        // Clean up the URL
         window.history.replaceState({}, document.title, "/");
     }
 
-    // 2. Read the secure token from local storage
+    // 2. Read the secure token
     const userData = localStorage.getItem('campusUser');
     
     if (!userData) {
-        // If no token is found, kick them back to Port 3000 immediately
         alert("Unauthorized Access. Redirecting to Gateway...");
         window.location.href = 'http://localhost:3000';
     } else {
         try {
-            // Parse identity and personalize the dashboard
             currentUser = JSON.parse(userData);
             document.getElementById('navUserName').innerText = currentUser.name || 'User';
             
-            // Load data only after confirming identity
+            // Load initial data
             fetchRemoteStreamArray(); 
+            
+            // 3. AUTO-REFRESH: Poll for new status changes every 5 seconds
+            setInterval(fetchRemoteStreamArray, 5000); 
+
         } catch (err) {
             console.error('Error parsing user data:', err);
-            alert("Session data corrupted. Redirecting to login...");
             localStorage.removeItem('campusUser');
             window.location.href = 'http://localhost:3000';
         }
@@ -48,7 +48,6 @@ window.onload = () => {
 };
 
 function returnToHub() {
-    // Sends the user back to the central port 3000 dashboard
     window.location.href = 'http://localhost:3000/dashboard.html';
 }
 
@@ -67,18 +66,15 @@ async function fetchRemoteStreamArray() {
         document.getElementById('metricPending').textContent = pendingCount;
 
         if (dataArray.length === 0) {
-            targetUl.innerHTML = `
-                <div class="text-center py-5">
-                    <p class="text-muted small">No requests found in the system.</p>
-                </div>`;
+            targetUl.innerHTML = `<div class="text-center py-5"><p class="text-muted small">No requests found.</p></div>`;
             return;
         }
 
-        // Render the list dynamically based on Role
+        // Render the list dynamically
         targetUl.innerHTML = dataArray.map(doc => {
-            // DYNAMIC UI: Admin gets dropdowns, Students get static badges
             let statusElement = '';
             
+            // DYNAMIC UI: Admin gets dropdowns, Students get colored badges
             if (currentUser && currentUser.role === 'admin') {
                 statusElement = `
                     <select class="form-select form-select-sm" style="width: 130px; border-color: #ffc107;" onchange="updateRequestStatus('${escapeOutput(doc._id)}', this.value)">
@@ -89,32 +85,30 @@ async function fetchRemoteStreamArray() {
                     </select>
                 `;
             } else {
-                statusElement = `<span class="badge badge-warning">${escapeOutput(doc.status || 'Pending')}</span>`;
+                // ADDED: Color coding for status so student sees the difference
+                let colorClass = doc.status === 'Resolved' ? 'bg-success' : (doc.status === 'In Progress' ? 'bg-primary' : 'bg-warning');
+                statusElement = `<span class="badge ${colorClass} text-white">${escapeOutput(doc.status || 'Pending')}</span>`;
             }
 
             return `
-            <li class="list-group-item request-item d-flex justify-content-between align-items-center p-3 shadow-sm border-0">
+            <li class="list-group-item request-item d-flex justify-content-between align-items-center p-3 shadow-sm border-0 mb-2">
                 <div>
                     <h6 class="mb-1 fw-bold text-dark">${escapeOutput(doc.title)}</h6>
                     <p class="mb-0 text-muted small">
                         <span class="me-2">Location: <strong>${escapeOutput(doc.location)}</strong></span>
-                        <span class="text-xs">ID: ${escapeOutput(doc._id)}</span>
                     </p>
                 </div>
-                <div>
-                    ${statusElement}
-                </div>
+                <div>${statusElement}</div>
             </li>
             `;
         }).reverse().join('');
 
     } catch (err) {
         console.error("Error fetching requests:", err);
-        targetUl.innerHTML = `<div class="alert alert-danger p-3 small">Failed to load requests: ${escapeOutput(err.message)}</div>`;
     }
 }
 
-// --- Network Layer: Create Request (Triggers SOA) ---
+// --- Network Layer: Create Request ---
 async function dispatchRequestPost() {
     const titleElement = document.getElementById('titleInput');
     const locationElement = document.getElementById('locationInput');
@@ -122,10 +116,7 @@ async function dispatchRequestPost() {
     const titleValue = titleElement.value.trim();
     const locationValue = locationElement.value.trim();
 
-    if (!titleValue || !locationValue) {
-        alert("Validation Error: Both title and location are required.");
-        return;
-    }
+    if (!titleValue || !locationValue) return alert("Validation Error: Both title and location are required.");
 
     try {
         const response = await fetch('/api/requests', {
@@ -134,29 +125,20 @@ async function dispatchRequestPost() {
             body: JSON.stringify({ title: titleValue, location: locationValue })
         });
 
-        if (!response.ok) {
-            const rawErrorResponse = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-            throw new Error(rawErrorResponse.error || `Server error: ${response.status}`);
+        if (response.ok) {
+            titleElement.value = '';
+            locationElement.value = '';
+            await fetchRemoteStreamArray();
+            alert("Request created!");
         }
-
-        titleElement.value = '';
-        locationElement.value = '';
-        
-        await fetchRemoteStreamArray();
-        alert("Request created successfully!");
-
     } catch (error) {
-        console.error("Error creating request:", error);
-        alert(`Failed to create request: ${escapeOutput(error.message)}`);
+        alert("Failed to create request.");
     }
 }
 
 // --- Admin Action: Update Request Status ---
 async function updateRequestStatus(id, newStatus) {
-    if (!currentUser || currentUser.role !== 'admin') {
-        alert("Only admins can update request status.");
-        return;
-    }
+    if (!currentUser || currentUser.role !== 'admin') return;
 
     try {
         const response = await fetch(`/api/requests/${id}`, {
@@ -166,19 +148,13 @@ async function updateRequestStatus(id, newStatus) {
         });
 
         if (response.ok) {
-            console.log(`Request ${id} updated to ${newStatus}`);
-            await fetchRemoteStreamArray();
-        } else {
-            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-            alert(`Failed to update status: ${escapeOutput(error.error)}`);
+            await fetchRemoteStreamArray(); // Refresh immediately after admin change
         }
     } catch (err) {
         console.error("Error updating status:", err);
-        alert(`Error updating status: ${escapeOutput(err.message)}`);
     }
 }
 
-// Helper string encoder to avoid cross-site scripting (XSS)
 function escapeOutput(str) {
     if (!str) return '';
     const div = document.createElement('div');
