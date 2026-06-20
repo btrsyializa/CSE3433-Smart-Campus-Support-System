@@ -47,18 +47,16 @@
     </div>
 
     <script>
+        // --- Cloud Service Registry Endpoints ---
+        const AUTH_URL = 'https://cse3433-smart-campus-support-system-1.onrender.com';
+        
         let isLoginMode = true; 
 
         window.onload = () => {
-            // ================================================================
-            // FIXED SESSION GUARD CHECK: 
-            // If already logged in, stay on Port 3000 and load your dashboard.html hub!
-            // ================================================================
             const cachedUser = localStorage.getItem('campusUser');
             if (cachedUser) {
                 window.location.href = '/dashboard.html';
             }
-            // ================================================================
         };
 
         function toggleMode() {
@@ -87,7 +85,8 @@
             
             if (!name || !email || !matricNo || !password) return alert("Please fill in all fields to register.");
 
-            const res = await fetch('/api/auth/register', {
+            // UPDATED: Now points to the absolute cloud URL
+            const res = await fetch(`${AUTH_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, matricNo, password })
@@ -116,7 +115,8 @@
             alertBox.innerText = "Authenticating identity context...";
 
             try {
-                const res = await fetch('/api/auth/login', {
+                // UPDATED: Now points to the absolute cloud URL
+                const res = await fetch(`${AUTH_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -126,14 +126,7 @@
                 if(res.ok) {
                     alertBox.className = "mt-3 text-success";
                     alertBox.innerText = "Access Authorized! Opening Control Hub...";
-                    
-                    // ================================================================
-                    // FIXED INTER-SERVICE REDIRECTION RULE:
-                    // DO NOT jump to Port 3001 yet. Redirect internally to dashboard.html on Port 3000
-                    // Pass the secure backend token along the URL pipeline parameter
-                    // ================================================================
                     window.location.href = `/dashboard.html?session=${data.token}`;
-                    // ================================================================
                 } else {
                     alertBox.className = "mt-3 text-danger";
                     alertBox.innerText = data.error || "Invalid Credentials.";

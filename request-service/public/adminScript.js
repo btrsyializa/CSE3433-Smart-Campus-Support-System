@@ -1,3 +1,8 @@
+// --- SOA Service Registry Endpoints ---
+// These point to your live Render cloud deployment URLs
+const AUTH_URL = 'https://cse3433-smart-campus-support-system-1.onrender.com';
+const REQUEST_URL = 'https://cse3433-smart-campus-support-system-yejt.onrender.com';
+
 let currentUser = null;
 
 // --- SOA Identity Validation Guard ---
@@ -10,26 +15,26 @@ window.onload = () => {
             const decodedUser = atob(sessionToken);
             localStorage.setItem('campusUser', decodedUser);
         } catch (err) {
-            window.location.href = 'http://localhost:3000?error=auth_failed';
+            window.location.href = AUTH_URL; // Redirect to Auth gateway
             return;
         }
+        // Clean up the URL
         window.history.replaceState({}, document.title, "/admin.html");
     }
 
     const userData = localStorage.getItem('campusUser');
     
     if (!userData) {
-        window.location.href = 'http://localhost:3000';
+        window.location.href = AUTH_URL;
     } else {
         try {
             currentUser = JSON.parse(userData);
             
-            // ARCHITECTURAL PROTECTION FIREWALL:
-            // Reject any identity ticket that does not carry the verified 'admin' authority context
+            // ARCHITECTURAL PROTECTION: Validate administrative clearance
             if (currentUser.role !== 'admin') {
-                alert("ACCESS REJECTED: Identity context does not possess Administrative clearance.");
+                alert("ACCESS REJECTED: Identity context lacks Administrative clearance.");
                 localStorage.removeItem('campusUser');
-                window.location.href = 'http://localhost:3000';
+                window.location.href = AUTH_URL;
                 return;
             }
 
@@ -37,21 +42,22 @@ window.onload = () => {
             fetchRemoteStreamArray(); 
         } catch (err) {
             localStorage.removeItem('campusUser');
-            window.location.href = 'http://localhost:3000';
+            window.location.href = AUTH_URL;
         }
     }
 };
 
+// Redirect back to the main portal hub
 function returnToHub() {
-    localStorage.removeItem('campusUser');
-    window.location.href = 'http://localhost:3000';
+    window.location.href = `${AUTH_URL}/dashboard.html`;
 }
 
-// Fetch all reported requests from data layer cluster
+// Fetch all reported requests from the cloud data layer
 async function fetchRemoteStreamArray() {
     const targetUl = document.getElementById('streamRenderingTarget');
     try {
-        const response = await fetch('/api/requests');
+        // Dynamic fetch using the cloud constant
+        const response = await fetch(`${REQUEST_URL}/api/requests`);
         if (!response.ok) throw new Error(`HTTP error code: ${response.status}`);
         
         const dataArray = await response.json();
@@ -64,7 +70,6 @@ async function fetchRemoteStreamArray() {
             return;
         }
 
-        // Render strictly as actionable input components for state-machine transition
         targetUl.innerHTML = dataArray.map(doc => {
             return `
             <li class="list-group-item request-item d-flex justify-content-between align-items-center p-3 shadow-sm border-0">
@@ -95,7 +100,7 @@ async function fetchRemoteStreamArray() {
 // State Machine Update Trigger Execution
 async function updateRequestStatus(id, newStatus) {
     try {
-        const response = await fetch(`/api/requests/${id}`, {
+        const response = await fetch(`${REQUEST_URL}/api/requests/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })

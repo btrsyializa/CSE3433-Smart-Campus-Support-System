@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Campus - Control Hub Hub</title>
+    <title>Smart Campus - Control Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <style>
-        /* Shared UI Aesthetics styling context */
         .service-card {
             border: 1px solid var(--pastel-pink);
             background: rgba(255, 255, 255, 0.6);
@@ -32,17 +31,14 @@
         <div id="studentPanel" class="row g-4" style="display: none;">
             <div class="col-md-6">
                 <div onclick="navigateWithSession(3001)" class="service-card h-100" style="cursor: pointer;">
-                    <div class="fs-1 mb-2"></div>
                     <h5 class="fw-bold" style="color: var(--accent-berry)">System Anomaly</h5>
-                    <p class="small text-muted mb-0">Report broken facilities or IT bugs directly to the campus maintenance desk.</p>
+                    <p class="small text-muted mb-0">Report broken facilities or IT bugs.</p>
                 </div>
             </div>
-            
             <div class="col-md-6">
                 <div onclick="navigateWithSession(3002)" class="service-card h-100" style="cursor: pointer;">
-                    <div class="fs-1 mb-2"></div>
                     <h5 class="fw-bold" style="color: var(--accent-berry)">Facility Booking</h5>
-                    <p class="small text-muted mb-0">Reserve study laboratories, sport spaces, and lecture presentation slots halls.</p>
+                    <p class="small text-muted mb-0">Reserve laboratories and lecture halls.</p>
                 </div>
             </div>
         </div>
@@ -50,9 +46,8 @@
         <div id="adminPanel" class="row g-4" style="display: none;">
             <div class="col-md-12">
                 <div onclick="navigateWithSession(3001)" class="service-card" style="cursor: pointer; border-color: #ffc107; background: linear-gradient(135deg, #fffdf5 0%, #fff8d6 100%);">
-                    <div class="fs-1 mb-2"></div>
-                    <h5 class="fw-bold text-warning" style="text-shadow: 0px 1px 2px rgba(0,0,0,0.1);">Admin Override Panel</h5>
-                    <p class="small text-muted mb-0">Evaluate student fault requests, transition issue states, block anomalies globally, and administer systems cluster.</p>
+                    <h5 class="fw-bold text-warning">Admin Override Panel</h5>
+                    <p class="small text-muted mb-0">Evaluate student fault requests and administer systems cluster.</p>
                 </div>
             </div>
         </div>
@@ -63,35 +58,34 @@
     </div>
 
     <script>
-        // --- Single Sign-On Identity Token Interception Guard ---
+        // --- Cloud Service Registry Endpoints ---
+        const AUTH_URL = 'https://cse3433-smart-campus-support-system-1.onrender.com';
+        const FACILITY_URL = 'https://cse3433-smart-campus-support-system.onrender.com';
+        const REQUEST_URL = 'https://cse3433-smart-campus-support-system-yejt.onrender.com';
+        
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const queryToken = urlParams.get('session');
 
             if (queryToken) {
                 try {
-                    // Decodes base64 signed payload string packet back to browser memory
                     const decodedUser = atob(queryToken);
                     localStorage.setItem('campusUser', decodedUser);
                 } catch (err) {
-                    console.error("SSO pipeline token unpack crash:", err);
-                    window.location.href = '/';
+                    window.location.href = AUTH_URL;
                     return;
                 }
-                // Cleans parameter queries from URL query path smoothly
                 window.history.replaceState({}, document.title, "/dashboard.html");
             }
 
             const userData = localStorage.getItem('campusUser');
             if(!userData) {
-                // Not logged in or expired context! Reject routing back to gateway login
-                window.location.href = '/'; 
+                window.location.href = AUTH_URL; 
             } else {
                 try {
                     const user = JSON.parse(userData);
                     document.getElementById('studentName').innerText = user.name;
                     
-                    // Render Context metadata titles safely
                     const titleTarget = document.getElementById('contextSubtitle');
                     if(user.role === 'admin') {
                         titleTarget.innerHTML = `<span class="badge bg-danger p-2 px-3 shadow-sm" style="border-radius:10px;">CLEARANCE: ADMINISTRATIVE OVERRIDE</span>`;
@@ -107,38 +101,29 @@
             }
         };
 
-        // --- Decoupled Service Mesh SSO Redirection Engine ---
+        // --- SOA Cloud Redirection Engine ---
         function navigateWithSession(port) {
             const userData = localStorage.getItem('campusUser');
             if (userData) {
-                try {
+                const token = btoa(userData);
+                
+                if (port === 3001) {
+                    // Routes to Request Service Cloud URL
                     const user = JSON.parse(userData);
-                    // Packs credentials into Base64 string payload ticket
-                    const token = btoa(userData);
-                    
-                    if (port === 3001) {
-                        // Splits layout paths explicitly across role bounds to clear 404 endpoint failures
-                        if (user.role === 'admin') {
-                            window.location.href = `http://localhost:3001/admin.html?session=${token}`;
-                        } else {
-                            window.location.href = `http://localhost:3001/dashboard.html?session=${token}`;
-                        }
-                    } else if (port === 3002) {
-                        // Maps target parameters into your facility cluster module
-                        window.location.href = `http://localhost:3002/booking.html?session=${token}`;
-                    }
-                } catch (err) {
-                    logout();
+                    const page = (user.role === 'admin') ? 'admin.html' : 'dashboard.html';
+                    window.location.href = `${REQUEST_URL}/${page}?session=${token}`;
+                } else if (port === 3002) {
+                    // Routes to Facility Service Cloud URL
+                    window.location.href = `${FACILITY_URL}/booking.html?session=${token}`;
                 }
             } else {
                 logout();
             }
         }
 
-        // --- Session Eviction Destructor Routine ---
         function logout() {
             localStorage.removeItem('campusUser');
-            window.location.href = '/'; 
+            window.location.href = AUTH_URL; 
         }
     </script>
 </body>

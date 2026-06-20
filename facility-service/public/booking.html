@@ -34,7 +34,7 @@
         <h4 class="mb-0" style="color: var(--accent-berry); font-family: 'Playfair Display', serif;">Facility Booking Core</h4>
         <div>
             <span class="me-3">User: <strong id="navUserName">Loading...</strong></span>
-            <button onclick="window.location.href='http://localhost:3000/dashboard.html'" class="btn btn-sm btn-outline-secondary">Return to Hub</button>
+            <button onclick="returnToHub()" class="btn btn-sm btn-outline-secondary">Return to Hub</button>
         </div>
     </nav>
 
@@ -67,20 +67,23 @@
     </div>
 
     <script>
+        // --- SOA Cloud Registry ---
+        const AUTH_URL = 'https://cse3433-smart-campus-support-system-1.onrender.com';
+        const FACILITY_URL = 'https://cse3433-smart-campus-support-system.onrender.com';
+        
         let currentUser = null;
 
-        // SSO Guard
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('session');
             if (token) {
                 localStorage.setItem('campusUser', atob(token));
-                window.history.replaceState({}, document.title, "/");
+                window.history.replaceState({}, document.title, "/booking.html");
             }
             const userData = localStorage.getItem('campusUser');
             if (!userData) {
-                alert("Unauthorized. Returning to Hub.");
-                window.location.href = 'http://localhost:3000';
+                alert("Unauthorized. Redirecting...");
+                window.location.href = AUTH_URL;
             } else {
                 currentUser = JSON.parse(userData);
                 document.getElementById('navUserName').innerText = currentUser.name;
@@ -88,8 +91,13 @@
             }
         };
 
+        function returnToHub() {
+            window.location.href = `${AUTH_URL}/dashboard.html`;
+        }
+
         async function fetchBookings() {
-            const res = await fetch('/api/bookings');
+            // UPDATED: Now uses FACILITY_URL constant
+            const res = await fetch(`${FACILITY_URL}/api/bookings`);
             const data = await res.json();
             document.getElementById('bookingList').innerHTML = data.map(b => 
                 `<li class="list-group-item d-flex justify-content-between mb-2 shadow-sm rounded">
@@ -110,7 +118,8 @@
 
             if(!payload.date) return alert("Please select a date!");
 
-            const res = await fetch('/api/bookings', {
+            // UPDATED: Now uses FACILITY_URL constant
+            const res = await fetch(`${FACILITY_URL}/api/bookings`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
