@@ -32,10 +32,9 @@ const BookingSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 }, { collection: 'bookings' });
 
-// Update timestamp before saving
-BookingSchema.pre('save', function(next) {
+// Modern Mongoose style: Update timestamp automatically before saving without next() callbacks
+BookingSchema.pre('save', function() {
     this.updatedAt = Date.now();
-    next();
 });
 
 module.exports = mongoose.model('Booking', BookingSchema);
