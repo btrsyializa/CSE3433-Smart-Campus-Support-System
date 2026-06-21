@@ -3,6 +3,9 @@
 Project Proposal: 
 [GP10_PROJECT-PROPOSAL.pdf](https://github.com/user-attachments/files/29143228/GP10_PROJECT-PROPOSAL.pdf)
 
+Architecture Design:
+[GP10_ARCHITECTURE-DESIGN.pdf](https://github.com/user-attachments/files/29173266/GP10_ARCHITECTURE-DESIGN.pdf)
+
 Prototype Progress: 
 [GROUP10_PROTOTYPE-PROGRESS.pdf](https://github.com/user-attachments/files/29142793/GROUP10_PROTOTYPE-PROGRESS.pdf)
 
